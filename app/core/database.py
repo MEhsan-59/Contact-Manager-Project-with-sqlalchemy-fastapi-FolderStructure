@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from core.config import settings
+from app.core.config import settings
 
 
 engine = create_engine(

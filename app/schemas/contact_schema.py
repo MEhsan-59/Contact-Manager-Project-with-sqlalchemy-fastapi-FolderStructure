@@ -1,7 +1,7 @@
 import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from core.enums import CategoryEnum
+from app.core.enums import CategoryEnum
 
 class AddContactSchema(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
@@ -9,8 +9,7 @@ class AddContactSchema(BaseModel):
     fullname: str = Field(max_length=100)
     phone_number: str = Field(max_length=20)
     category: CategoryEnum
-    favorite: bool = False
-
+    is_favorite: bool = False
     @field_validator("phone_number", "fullname")
     @classmethod
     def not_empty(cls, v: str) -> str:

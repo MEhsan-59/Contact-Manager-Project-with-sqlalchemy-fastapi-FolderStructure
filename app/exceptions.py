@@ -11,3 +11,4 @@ class ContactError(Exception):
 class ContactNotFoundException(ContactError):
     status_code = 404
     message = "Contact not found."
+    

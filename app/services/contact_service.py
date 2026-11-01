@@ -1,4 +1,4 @@
-from exceptions import ContactNotFoundException
+from app.exceptions import ContactNotFoundException
 
 class ContactService:
     def __init__(self, contact_repository):
@@ -12,7 +12,7 @@ class ContactService:
             "fullname": saved_contact.fullname,
             "phone_number": saved_contact.phone_number,
             "category": saved_contact.category,
-            "favorite": saved_contact.favorite,
+            "is_favorite": saved_contact.is_favorite,
         }
         return {"status": True, "message": "Contact added successfully", "data": data}
 
@@ -24,7 +24,7 @@ class ContactService:
                 "fullname": contact.fullname,
                 "phone_number": contact.phone_number,
                 "category": contact.category,
-                "favorite": contact.favorite,
+                "is_favorite": contact.is_favorite,
             }
             for contact in contacts
         ]
@@ -32,7 +32,7 @@ class ContactService:
 
     def view_contact_by_name_or_phone(self, name: str | None = None, phone_number: str | None = None):
         if not name and not phone_number:
-            return {"status": False, "message": "Please provide either name or phone number."}
+            raise ContactNotFoundException("Please provide either name or phone number.")
 
         contacts = self.contact_repo.search_contacts(name, phone_number)
         print(phone_number, type(phone_number))
@@ -42,19 +42,17 @@ class ContactService:
                 "fullname": contact.fullname,
                 "phone_number": contact.phone_number,
                 "category": contact.category, 
-                "favorite": contact.favorite,
+                "is_favorite": contact.is_favorite,
             }
             for contact in contacts
         ]
-        print(filtered_contacts)
-
         if not filtered_contacts:
-            return {"status": False, "message": "No contacts found with the provided criteria."}
+            raise ContactNotFoundException("No contacts found with the provided criteria.")
 
         return {"status": True, "message": "Contacts retrieved successfully", "data": filtered_contacts}
 
-    def delete_contact(self, fullname: str):
-        contact = self.contact_repo.get_contact_by_fullname(fullname)
+    def delete_contact(self, contact_id: int):
+        contact = self.contact_repo.get_contact_by_id(contact_id)
         if not contact:
             raise ContactNotFoundException()
 
