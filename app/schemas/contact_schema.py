@@ -34,3 +34,11 @@ class ContactResponse(BaseModel):
     status: bool
     message: str
     data: dict | list[dict] = None
+
+class UpdateContactSchema(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+    fullname: str | None = Field(default=None, max_length=100)
+    phone_number: str | None = Field(default=None, max_length=20)
+    category: CategoryEnum | None = None
+    is_favorite: bool | None = None
+    

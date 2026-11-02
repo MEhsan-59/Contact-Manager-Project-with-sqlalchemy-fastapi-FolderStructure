@@ -66,11 +66,13 @@ def test_add_contact_rejects_blank_fullname(client, sample_contact):
 
 
 def test_delete_contact_removes_contact(client, sample_contact):
-    client.post("/contacts/add_contact", json=sample_contact)
+    contact_id = client.post(
+        "/contacts/add_contact", json=sample_contact
+    ).json()["data"]["id"]
 
     response = client.delete(
         "/contacts/delete_contact",
-        params={"fullname": sample_contact["fullname"]},
+        params={"contact_id": contact_id},
     )
 
     assert response.status_code == 200
@@ -81,8 +83,70 @@ def test_delete_contact_removes_contact(client, sample_contact):
 def test_delete_unknown_contact_returns_not_found(client):
     response = client.delete(
         "/contacts/delete_contact",
-        params={"fullname": "Missing Contact"},
+        params={"contact_id": 9999},
     )
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Contact not found."
+
+
+def test_delete_contact_removes_group_memberships(client, sample_contact):
+    create_response = client.post("/contacts/add_contact", json=sample_contact)
+    contact_id = create_response.json()["data"]["id"]
+    group_response = client.post(
+        "/groups/create_group",
+        params={"group_name": "Family"},
+    )
+    group_id = group_response.json()["data"]["group_id"]
+    add_response = client.post(
+        "/groups/add_contact_to_group",
+        params={"group_id": group_id, "contact_id": contact_id},
+    )
+    assert add_response.status_code == 200
+
+    delete_response = client.delete(
+        "/contacts/delete_contact",
+        params={"contact_id": contact_id},
+    )
+
+    assert delete_response.status_code == 200
+    assert client.get(
+        "/groups/view_group_contacts",
+        params={"group_id": group_id},
+    ).status_code == 404
+    groups_response = client.get("/groups/view_all_groups")
+    assert groups_response.status_code == 200
+    assert groups_response.json()["data"][0]["group_name"] == "Family"
+
+
+def test_update_contact_returns_updated_contact(client, sample_contact):
+    create_response = client.post("/contacts/add_contact", json=sample_contact)
+    contact_id = create_response.json()["data"]["id"]
+
+    response = client.put(
+        f"/contacts/update_contact/{contact_id}",
+        json={"fullname": "Updated Contact"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": True,
+        "message": "Contact updated successfully.",
+        "data": {
+            "id": contact_id,
+            "fullname": "Updated Contact",
+            "phone_number": sample_contact["phone_number"],
+            "category": sample_contact["category"],
+            "is_favorite": sample_contact["is_favorite"],
+        },
+    }
+
+
+def test_update_unknown_contact_returns_not_found(client):
+    response = client.put(
+        "/contacts/update_contact/9999",
+        json={"fullname": "Updated Contact"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Contact with ID '9999' not found."

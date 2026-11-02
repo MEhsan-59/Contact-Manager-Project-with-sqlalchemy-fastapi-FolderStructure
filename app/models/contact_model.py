@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Integer, String, BigInteger
+from sqlalchemy.orm import validates
 from app.core.database import Base
 
 class Contact(Base):
@@ -10,3 +11,6 @@ class Contact(Base):
     is_favorite = Column(Boolean, default=False, nullable=False)
     category = Column(String(20), nullable=False, index=True)
     
+    @validates("fullname")
+    def convert_fullname_to_title(self, key, value):
+        return value.title()

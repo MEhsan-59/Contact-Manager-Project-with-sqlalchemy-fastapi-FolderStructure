@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from app.models.contact import Contact
+from app.models.contact_model import Contact
+from app.models.group_contact_model import GroupContact
 from  sqlalchemy import or_
 
 class ContactRepository:
@@ -32,5 +33,15 @@ class ContactRepository:
         return self.db.query(Contact).filter(Contact.id == contact_id).first()
     
     def delete_contact(self, contact: Contact):
+        self.db.query(GroupContact).filter(
+            GroupContact.contact_id == contact.id
+        ).delete(synchronize_session=False)
         self.db.delete(contact)
         self.db.commit()
+    
+    def update_contact(self, contact, contact_data: dict):
+        for key, value in contact_data.items():
+            setattr(contact, key, value)
+        self.db.commit()
+        self.db.refresh(contact)
+        return contact

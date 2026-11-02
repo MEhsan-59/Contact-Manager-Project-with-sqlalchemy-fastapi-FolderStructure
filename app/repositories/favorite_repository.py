@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.contact import Contact
+from app.models.contact_model import Contact
 
 
 class FavoriteRepository:

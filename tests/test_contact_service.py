@@ -1,5 +1,4 @@
 import pytest
-
 from app.core.enums import CategoryEnum
 from app.exceptions import ContactNotFoundException
 from app.repositories.contact_repository import ContactRepository

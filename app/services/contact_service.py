@@ -1,4 +1,4 @@
-from app.exceptions import ContactNotFoundException
+from app.exceptions import AppException, ContactNotFoundException, DuplicateException
 
 class ContactService:
     def __init__(self, contact_repository):
@@ -32,10 +32,9 @@ class ContactService:
 
     def view_contact_by_name_or_phone(self, name: str | None = None, phone_number: str | None = None):
         if not name and not phone_number:
-            raise ContactNotFoundException("Please provide either name or phone number.")
+            return {"status": False, "message": "Please provide either name or phone number."}
 
         contacts = self.contact_repo.search_contacts(name, phone_number)
-        print(phone_number, type(phone_number))
         filtered_contacts = [
             {
                 "id": contact.id,
@@ -47,7 +46,7 @@ class ContactService:
             for contact in contacts
         ]
         if not filtered_contacts:
-            raise ContactNotFoundException("No contacts found with the provided criteria.")
+            return {"status": False, "message": "No contacts found with the provided criteria."}
 
         return {"status": True, "message": "Contacts retrieved successfully", "data": filtered_contacts}
 
@@ -55,6 +54,27 @@ class ContactService:
         contact = self.contact_repo.get_contact_by_id(contact_id)
         if not contact:
             raise ContactNotFoundException()
-
         self.contact_repo.delete_contact(contact)
         return {"status": True, "message": "Contact deleted successfully."}
+
+    def update_contact(self, contact_id: int, contact_data: dict):
+        contact = self.contact_repo.get_contact_by_id(contact_id)
+        if not contact:
+            raise ContactNotFoundException(f"Contact with ID '{contact_id}' not found.")
+        new_name = contact_data.get("fullname")
+        if new_name and new_name != contact.fullname:
+            existing = self.contact_repo.get_contact_by_fullname(new_name)
+            if existing and existing.id != contact.id:
+                raise DuplicateException(message=f"Contact with name '{new_name}' already exists.")
+        updated = self.contact_repo.update_contact(contact, contact_data)
+        return {
+            "status": True,
+            "message": "Contact updated successfully.",
+            "data": {
+                "id": updated.id,
+                "fullname": updated.fullname,
+                "phone_number": updated.phone_number,
+                "category": updated.category,
+                "is_favorite": updated.is_favorite,
+            },
+        }

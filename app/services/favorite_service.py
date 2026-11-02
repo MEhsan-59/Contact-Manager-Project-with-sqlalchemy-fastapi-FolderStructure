@@ -1,7 +1,6 @@
 from app.repositories import contact_repository
-from app.services.contact_service import ContactService
 from app.repositories.favorite_repository import FavoriteRepository
-from app.exceptions import ContactError, ContactNotFoundException
+from app.exceptions import ContactNotFoundException, AppException, DuplicateException
 
 class FavoriteService:
     def __init__(self, contact_repo: contact_repository.ContactRepository, favorite_repo: FavoriteRepository):
@@ -11,9 +10,9 @@ class FavoriteService:
     def add_contact_to_favorite(self, contact_id: int):
         contact = self.contact_repo.get_contact_by_id(contact_id)
         if not contact:
-            raise ContactNotFoundException(f"Contact with contact_id '{contact_id}' not found.")
+            raise ContactNotFoundException(f"Contact with ID '{contact_id}' not found.")
         if contact.is_favorite:
-            raise ContactError("Contact is already a favorite.")
+            raise DuplicateException(message="Contact is already a favorite.")
 
         self.favorite_repo.add_contact_to_favorite(contact)
         return {"status": True, "message": "Contact added to favorites successfully."}
@@ -21,9 +20,9 @@ class FavoriteService:
     def remove_contact_from_favorite(self, contact_id: int):
         contact = self.contact_repo.get_contact_by_id(contact_id)
         if not contact:
-            raise ContactNotFoundException(f"Contact with contact_id '{contact_id}' not found.")
+            raise ContactNotFoundException(f"Contact with ID '{contact_id}' not found.")
         if not contact.is_favorite:
-            raise ContactError("Contact is not a favorite.")
+            raise ContactNotFoundException("Contact is not a favorite.")
 
         self.favorite_repo.remove_contact_from_favorite(contact)
         return {"status": True, "message": "Contact removed from app.favorites successfully."}

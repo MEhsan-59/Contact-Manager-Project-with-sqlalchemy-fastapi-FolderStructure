@@ -1,14 +1,12 @@
 #app/core/config.py
-import os
-import dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-dotenv.load_dotenv()
+class Settings(BaseSettings):
+    secret_key: str
+    AlGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    DATABASE_URL: str 
 
-class Settings:
-    secret_key = os.getenv("SECRET_KEY")
-    if not secret_key:
-        raise ValueError("SECRET_KEY is not set in the environment")
-    AlGORITHM: str = os.getenv("ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./bank.db")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    
 settings = Settings()

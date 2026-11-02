@@ -9,9 +9,7 @@ router = APIRouter()
 def add_contact_to_favorite(
     contact_id: int,
     service: FavoriteService = Depends(get_favorite_service),):
-    result = service.add_contact_to_favorite(contact_id)
-    print("result:", result)
-    return result
+    return service.add_contact_to_favorite(contact_id)
 
 @router.get("/view_favorite_contacts", response_model=ContactResponse)
 def view_favorite_contacts(
@@ -21,7 +19,6 @@ def view_favorite_contacts(
 
 @router.delete("/remove_contact_from_favorite", response_model=AddContactResponse)
 def remove_contact_from_favorite(contact_id: int, service: FavoriteService = Depends(get_favorite_service)):
-    result = service.remove_contact_from_favorite(contact_id)
-    return result
+    return service.remove_contact_from_favorite(contact_id)
 
     

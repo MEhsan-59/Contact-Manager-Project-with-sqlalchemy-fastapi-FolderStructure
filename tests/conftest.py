@@ -1,26 +1,21 @@
 import os
 import sys
-from app.pathlib import Path
+from pathlib import Path
 
 import pytest
-from app.fastapi.testclient import TestClient
-from app.sqlalchemy import create_engine
-from app.sqlalchemy.orm import sessionmaker
-from app.sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-
-APP_DIR = Path(__file__).resolve().parents[1] / "app"
-if str(APP_DIR) not in sys.path:
-    sys.path.insert(0, str(APP_DIR))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
 
-from app.importlib import import_module
-
-database = import_module("core.database")
-Base = database.Base
-get_db = database.get_db
-app = import_module("main").app
+from app.core.database import Base, get_db
+from app.main import app
 
 
 @pytest.fixture
